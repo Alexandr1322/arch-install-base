@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 
+setfont cyr-sun16
 # Ваш диск по умолчанию, на который будем ставить
 DISK="nvme0n1"
 # Имена раделов
@@ -20,7 +21,7 @@ bold=$(tput bold)
 clear_l=$(tput ed)
 
 # Базовые пакеты
-p_base="linux-lts linux-firmware base-devel intel-ucode xorg networkmanager"
+p_base="base base-devel linux-lts linux-firmware amd-ucode intel-ucode xorg networkmanager"
 ## Драйвера
 p_drv="r8168 nvidia nvidia-utils lib32-nvidia-utils"
 ## Шрифты
@@ -86,15 +87,16 @@ fast_install2() {
 	mount -t auto /dev/${DISK}${PARTED_EFI} $EFI_DIR
 	mount -t auto /dev/${DISK}${PARTED_SYS} $SYS_DIR
 	sleep 1
-	sed -i "/\[multilib\]/,/Include/"'s/^#//' /etc/pacman.conf
+	sed -i "/\[multilib\]/,/Include/"'s/^#//' ${SYS_DIR}/etc/pacman.conf
 	pacman -Sy
 	fast_install3
 }
 
 fast_install3() {
 	pacman-key --init
-	pacstrap -i $SYS_DIR $p_base $p_drv $p_font
-	genfstab -L $SYS_DIR >> $SYS_DIR/etc/fstab
+	pacstrap -K $SYS_DIR $p_base $p_drv $p_font || exit
+	genfstab -L $SYS_DIR >> $SYS_DIR/etc/fstab || exit
+	mkinitcpio -p linux || exit
 	system_settings
 }
 
@@ -112,7 +114,7 @@ echo "LC_COLLATE=C" >> /etc/locale.conf
 echo "KEYMAP=us,ru" > /etc/vconsole.conf
 echo "FONT=cyr-sun16" >> /etc/vconsole.conf
 locale-gen
-
+sed -i 's/# %wheel ALL=(ALL) ALL/%wheel ALL=(ALL) ALL/' /etc/sudoers
 ln -sf /usr/share/zoneinfo/Europe/Moscow /etc/localtime
 hwclock --systohc --utc && date
 echo $hostname > /etc/hostname
@@ -130,13 +132,14 @@ read -p '>>' pass_user
 echo -e "$pass_user\n$pass_user" | passwd -q $add_user
 echo -e $GREEN"Настройка завершена!"
 sleep 1
-cp $system_dir/usr/lib/systemd/system/getty@.service $system_dir/etc/systemd/system/autologin@.service
-ln -s $system_dir/etc/systemd/system/autologin@.service $system_dir/etc/systemd/system/getty.target.wants/getty@tty1.service
+cp $SYS_DIR/usr/lib/systemd/system/getty@.service $SYS_DIR/etc/systemd/system/autologin@.service
+ln -s $SYS_DIR/etc/systemd/system/autologin@.service $SYS_DIR/etc/systemd/system/getty.target.wants/getty@tty1.service
 hwclock --systohc --utc && date
 ln -sf /usr/share/zoneinfo/Europe/Moscow /etc/localtime
-pacman -S grub efibootmgr dosfstools os-prober
+pacman -Syu --noconfirm grub efibootmgr dosfstools os-prober
 grub-install --target=x86_64-efi --efi-directory=/efi --bootloader-id=Arch --force
 grub-mkconfig -o /boot/grub/grub.cfg
+mkinitcpio -P
 ENDOFILE
 chmod +x $SYS_DIR/root/post
 }
@@ -145,11 +148,11 @@ system_settings() {
 	pre_reboot
 	echo -e $GREEN"Базовая система установленна!"
 	echo -e $ORANGE"Дальнейшая настройка будет производится в chroot"
-	echo -e $ORANGE"После перехода запустите скрипт настройки ./post"
 	echo -e $GREEN"Нажмите Enter, чтобы продолжить"
 	read
 	echo -e $GREEN"Переход в chroot..."
 	sleep 5
-	arch-chroot $SYS_DIR /bin/bash
+	arch-chroot $SYS_DIR /bin/bash -c "/root/post" || exit
+	acrh-chroot $SYS_DIR /bin/bash
 }
 fast_install

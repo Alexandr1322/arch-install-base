@@ -29,6 +29,7 @@ p_font="ttf-dejavu ttf-liberation ttf-font-awesome ttf-hack ttf-iosevka-nerd"
 create_dir() {
 	if [[ ! -d "$system_dir" ]]; then
 		mkdir -p $SYS_DIR
+		mkdir -p $EFI_DIR
 	else
 		echo -e "$ORANGE Рабочая директория уже существует!"
 	fi

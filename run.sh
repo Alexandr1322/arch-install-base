@@ -70,14 +70,15 @@ fast_install() {
 fast_install2() {
 	echo -e $YELLOW"Размечаем.."
 # Автоматическая разметка
-	parted -s /dev/$DISK mklabel gpt
-	parted -s /dev/$DISK mkpart fat32 0% 1024M
-	parted -s /dev/$DISK set 1 esp on  
-	parted -s /dev/$DISK mkpart primary 1024M 90%
+#	parted -s /dev/${DISK} mklabel gpt
+#	parted -s /dev/${DISK} mkpart fat32 0% 1024M
+#	parted -s /dev/${DISK} set 1 esp on  
+#	parted -s /dev/${DISK} mkpart primary 1024M 90%
 	sleep 1
 # Форматирование разделов
-	mkfs.fat -F32 /dev/${DISK}${PARTED_EFI}
-	mkfs.ext4 /dev/${DISK}${PARTED_SYS}
+#	mkfs.fat -F32 /dev/${DISK}${PARTED_EFI}
+#	mkfs.ext4 /dev/${DISK}${PARTED_SYS}
+	cfdisk /dev/${DISK}
 	echo -e $YELLOW"Монтирование.."
 # Монтирование разделов в папки
 	create_dir

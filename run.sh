@@ -48,7 +48,7 @@ fast_install() {
 	echo -e "Выйти в главное меню - 0"
 	read -p '>> ' DISK
 
-	if [[ $DISK = "0" ]]; then init_script; fi
+	if [[ $DISK = "0" ]]; then fast_install; fi
 
 	clear;
 	echo -e "<< Проверьте данные >>\n";

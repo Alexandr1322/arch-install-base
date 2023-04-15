@@ -54,7 +54,7 @@ fast_install() {
 	echo -e "<< Проверьте данные >>\n"
 	
 	echo -e $RED"Будьте внимательны, диск будет отформатирован и размечен в GPT\n"
-	echo -e $GREEN" Диск: <${DISK}> $(lsblk /dev/$DISK -o "MODEL,SIZE" -n)"
+	echo -e $GREEN" Диск: <${DISK}> $(lsblk /dev/${DISK} -o "MODEL,SIZE" -n)"
 	echo -e $ORANGE
 	echo "Все верно? [Y/n]"
 	read -p '>> ' check_finstall

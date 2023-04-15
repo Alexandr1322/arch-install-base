@@ -53,6 +53,7 @@ fast_install() {
 	if [[ $DISK = "0" ]]; then fast_install; fi
 
 	clear;
+	
 	echo -e "<< Проверьте данные >>\n"
 	
 	echo -e $RED"Будьте внимательны, диск будет отформатирован и размечен в GPT\n"

@@ -28,7 +28,7 @@ p_drv="r8168 nvidia nvidia-utils lib32-nvidia-utils"
 p_font="ttf-dejavu ttf-liberation ttf-font-awesome ttf-hack ttf-iosevka-nerd"
 
 create_dir() {
-	if [[ ! -d "$system_dir" ]]; then
+	if [[ ! -d "$SYS_DIR" ]]; then
 		mkdir -p $SYS_DIR
 		mkdir -p $EFI_DIR
 	else

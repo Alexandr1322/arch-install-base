@@ -20,9 +20,9 @@ bold=$(tput bold)
 clear_l=$(tput ed)
 
 # Базовые пакеты
-p_base="linux-lts linux-firmware base-devel intel-ucode xorg NetworkManager"
+p_base="linux-lts linux-firmware base-devel intel-ucode xorg network-manager"
 ## Драйвера
-p_drv="r8168-dkms nvidia nvidia-utils lib32-nvidia-utils"
+p_drv="r8168 nvidia nvidia-utils lib32-nvidia-utils"
 ## Шрифты
 p_font="ttf-dejavu ttf-liberation ttf-font-awesome ttf-hack ttf-iosevka-nerd"
 

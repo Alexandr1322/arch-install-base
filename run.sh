@@ -8,16 +8,16 @@ PARTED_SYS="p2"
 EFI_DIR="/mnt/system/efi"
 SYS_DIR="/mnt/system"
 #Форматирование текста
-sp=$(sleep 0);
-RED="\e[31m";
-ORANGE="\e[33m";
-BLUE="\e[94m";
-L_BLUE="\e[96m";
+sp=$(sleep 0)
+RED="\e[31m"
+ORANGE="\e[33m"
+BLUE="\e[94m"
+L_BLUE="\e[96m"
 YELLOW="\e[93m"
-GREEN="\e[92m";
-STOP="\e[0m";
-bold=$(tput bold);
-clear_l=$(tput ed);
+GREEN="\e[92m"
+STOP="\e[0m"
+bold=$(tput bold)
+clear_l=$(tput ed)
 
 # Базовые пакеты
 p_base="linux-lts linux-firmware base-devel intel-ucode xorg NetworkManager"
@@ -35,13 +35,13 @@ create_dir() {
 }
 
 fast_install() {
-	clear;
+	clear
 	echo -e $RED"<< ВНИМАНИЕ! >>"
 	echo -e $ORANGE"Система будет установлена с настройками из готовой конфигурации:"
 	echo -e $ORANGE" - Диск будет размечен автоматически\n"
 	echo -e $ORANGE"Диск <disk> определяется по NAME <sda,sdb и.т.д>"
 	echo -e $ORANGE"========================================"
-	lsblk -o "NAME,MODEL,SIZE";
+	lsblk -o "NAME,MODEL,SIZE"
 	echo -e $ORANGE"========================================"
 	echo -e $BLUE;
 	echo "Напишите имя диска из списка, на который будет установлена система"
@@ -51,10 +51,10 @@ fast_install() {
 	if [[ $DISK = "0" ]]; then fast_install; fi
 
 	clear;
-	echo -e "<< Проверьте данные >>\n";
+	echo -e "<< Проверьте данные >>\n"
 	
 	echo -e $RED"Будьте внимательны, диск будет отформатирован и размечен в GPT\n"
-	echo -e $GREEN" Диск: <${DISK}> $(lsblk /dev/$DISK -o "MODEL,SIZE" -n -S)"
+	echo -e $GREEN" Диск: <${DISK}> $(lsblk /dev/$DISK -o "MODEL,SIZE" -n)"
 	echo -e $ORANGE
 	echo "Все верно? [Y/n]"
 	read -p '>> ' check_finstall
@@ -71,10 +71,10 @@ fast_install2() {
 	echo -e $YELLOW"Размечаем.."
 # Автоматическая разметка
 	parted -s /dev/$DISK mklabel gpt
-	parted -s /dev/$DISK mkpart "EFI system partition" fat32 0% 1024M
+	parted -s /dev/$DISK mkpart fat32 0% 1024M
 	parted -s /dev/$DISK set 1 esp on  
 	parted -s /dev/$DISK mkpart primary 1024M 90%
-	sleep 1;
+	sleep 1
 # Форматирование разделов
 	mkfs.fat -F32 /dev/${DISK}${PARTED_EFI}
 	mkfs.ext4 /dev/${DISK}${PARTED_SYS}
@@ -90,7 +90,7 @@ fast_install2() {
 }
 
 fast_install3() {
-	pacman-key --init;
+	pacman-key --init
 	pacstrap $system_dir $p_base $p_drv $p_font
 	genfstab -L $SYS_DIR >> $SYS_DIR/etc/fstab
 	system_settings

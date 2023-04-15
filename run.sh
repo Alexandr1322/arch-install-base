@@ -7,6 +7,17 @@ PARTED_EFI="p1"
 PARTED_SYS="p2"
 EFI_DIR="/mnt/system/efi"
 SYS_DIR="/mnt/system"
+#Форматирование текста
+sp=$(sleep 0);
+RED="\e[31m";
+ORANGE="\e[33m";
+BLUE="\e[94m";
+L_BLUE="\e[96m";
+YELLOW="\e[93m"
+GREEN="\e[92m";
+STOP="\e[0m";
+bold=$(tput bold);
+clear_l=$(tput ed);
 
 # Базовые пакеты
 p_base="linux-lts linux-firmware base-devel intel-ucode xorg NetworkManager"
@@ -139,5 +150,4 @@ system_settings() {
 	sleep 5
 	arch-chroot $SYS_DIR /bin/bash
 }
-
-
+fast_install

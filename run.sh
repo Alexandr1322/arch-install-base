@@ -2,7 +2,7 @@
 
 setfont cyr-sun16
 # Ваш диск по умолчанию, на который будем ставить
-DISK="nvme0n1"
+DISK_DEFAULT="nvme0n1"
 # Имена раделов
 PARTED_EFI="p1"
 PARTED_SYS="p2"
@@ -41,23 +41,23 @@ fast_install() {
 	echo -e $RED"<< ВНИМАНИЕ! >>"
 	echo -e $ORANGE"Система будет установлена с настройками из готовой конфигурации:"
 	echo -e $ORANGE" - Диск будет размечен автоматически\n"
-	echo -e $ORANGE"Диск <disk> определяется по NAME <sda,sdb и.т.д>"
+	echo -e $ORANGE"Диск <DISK_DEFAULT> определяется по NAME <sda,sdb и.т.д>"
 	echo -e $ORANGE"========================================"
 	lsblk -o "NAME,MODEL,SIZE"
 	echo -e $ORANGE"========================================"
 	echo -e $BLUE;
 	echo "Напишите имя диска из списка, на который будет установлена система"
 	echo -e "Выйти в главное меню - 0"
-	read -p '>> ' DISK
+	read -p '>> ' DISK_DEFAULT
 
-	if [[ $DISK = "0" ]]; then fast_install; fi
+	if [[ $DISK_DEFAULT = "0" ]]; then fast_install; fi
 
 	clear;
 	
 	echo -e "<< Проверьте данные >>\n"
 	
 	echo -e $RED"Будьте внимательны, диск будет отформатирован и размечен в GPT\n"
-	echo -e $GREEN" Диск: <${DISK}> $(lsblk /dev/${DISK} -o "MODEL,SIZE" -n)"
+	echo -e $GREEN" Диск: <${DISK_DEFAULT}> $(lsblk /dev/${DISK_DEFAULT} -o "MODEL,SIZE" -n)"
 	echo -e $ORANGE
 	echo "Все верно? [Y/n]"
 	read -p '>> ' check_finstall
@@ -73,20 +73,20 @@ fast_install() {
 fast_install2() {
 	echo -e $YELLOW"Размечаем.."
 # Автоматическая разметка
-	parted -s /dev/${DISK} mklabel gpt
-	parted -s /dev/${DISK} mkpart fat32 0% 1024M
-	parted -s /dev/${DISK} set 1 esp on  
-	parted -s /dev/${DISK} mkpart primary 1024M 90%
+	parted -s /dev/${DISK_DEFAULT} mklabel gpt
+	parted -s /dev/${DISK_DEFAULT} mkpart fat32 0% 1024M
+	parted -s /dev/${DISK_DEFAULT} set 1 esp on  
+	parted -s /dev/${DISK_DEFAULT} mkpart primary 1024M 90%
 	sleep 1
 # Форматирование разделов
-	mkfs.fat -F32 /dev/${DISK}${PARTED_EFI}
-	mkfs.ext4 /dev/${DISK}${PARTED_SYS}
-	cfdisk /dev/${DISK}
+	mkfs.fat -F32 /dev/${DISK_DEFAULT}${PARTED_EFI}
+	mkfs.ext4 /dev/${DISK_DEFAULT}${PARTED_SYS}
+	cfdisk /dev/${DISK_DEFAULT}
 	echo -e $YELLOW"Монтирование.."
 # Монтирование разделов в папки
 	create_dir
-	mount -t auto /dev/${DISK}${PARTED_EFI} $EFI_DIR
-	mount -t auto /dev/${DISK}${PARTED_SYS} $SYS_DIR
+	mount -t auto /dev/${DISK_DEFAULT}${PARTED_EFI} $EFI_DIR
+	mount -t auto /dev/${DISK_DEFAULT}${PARTED_SYS} $SYS_DIR
 	sleep 1
 	sed -i "/\[multilib\]/,/Include/"'s/^#//' ${SYS_DIR}/etc/pacman.conf
 	pacman -Sy

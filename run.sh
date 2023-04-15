@@ -93,7 +93,7 @@ fast_install2() {
 
 fast_install3() {
 	pacman-key --init
-	pacstrap $SYS_DIR $p_base $p_drv $p_font
+	pacstrap -i $SYS_DIR $p_base $p_drv $p_font
 	genfstab -L $SYS_DIR >> $SYS_DIR/etc/fstab
 	system_settings
 }

@@ -71,7 +71,7 @@ fast_install2() {
 # Монтирование разделов в папки
 	create_dir
 	mount -t auto /dev/${DISK}${PARTED_EFI} $EFI_DIR
-	mount -t auto /dev/${DISK}${PARETD_SYS} $SYS_DIR
+	mount -t auto /dev/${DISK}${PARTED_SYS} $SYS_DIR
 	sleep 1
 	sed -i "/\[multilib\]/,/Include/"'s/^#//' /etc/pacman.conf
 	pacman -Sy

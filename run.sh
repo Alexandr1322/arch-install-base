@@ -7,7 +7,7 @@ DISK_DEFAULT=""
 PARTED_EFI=""
 PARTED_SYS=""
 # Папки для монтирования
-EFI_DIR="/mnt/system/efi"
+EFI_DIR="/mnt/system/boot/efi"
 SYS_DIR="/mnt/system"
 # Форматирование текста
 sp=$(sleep 0)
@@ -139,10 +139,10 @@ ln -s /etc/systemd/system/autologin@.service /etc/systemd/system/getty.target.wa
 sed -i "/\[multilib\]/,/Include/"'s/^#//' /etc/pacman.conf
 hwclock --systohc --utc && date
 ln -sf /usr/share/zoneinfo/Europe/Moscow /etc/localtime
-pacman -Syu --noconfirm grub efibootmgr dosfstools os-prober
-grub-install --target=x86_64-efi --efi-directory=/efi --bootloader-id=Arch --force
-grub-mkconfig -o /boot/grub/grub.cfg || exit
 mkinitcpio -P || exit
+pacman -Syu --noconfirm grub efibootmgr dosfstools os-prober
+grub-install --target=x86_64-efi --efi-directory=$EFI_DIR --bootloader-id=Arch --force
+grub-mkconfig -o /boot/grub/grub.cfg || exit
 echo -e $GREEN"Настройка сиситемы завершена!"
 
 echo -e $GREEN"...Настройка локали..."

@@ -17,8 +17,7 @@ p_drv="r8168 nvidia nvidia-utils lib32-nvidia-utils"
 #### Шрифты
 p_font="ttf-dejavu ttf-liberation ttf-font-awesome ttf-hack ttf-iosevka-nerd"
 #### Форматирование текста
-bd=$(tput bold)
-cl=$(tput reset)
+bold=$(tput bold)
 pt() {
 case $2 in
 	info) COLOR="94m" ;;
@@ -61,8 +60,8 @@ check_type_disk() {
 }
 
 fast_install() {
-	cl
-	pt "<< ВНИМАНИЕ! >>" "error"
+	clear
+	pt "<< ВНИМАНИЕ! >>\n" "error"
 	pt "Система будет установлена с настройками из готовой конфигурации:\n" "warning"
 	pt " - Диск будет размечен автоматически\n" "warning"
 	pt "Диск <disk> определяется по NAME <sda,sdb и.т.д>\n" "warning"
@@ -70,11 +69,11 @@ fast_install() {
 	lsblk -o "NAME,MODEL,SIZE"
 	pt "========================================\n" "warning"
 	pt "Напишите имя диска из списка, на который будет установлена система\n" "info"
-	pt "Выйти - 0" "info"
+	pt "Выйти - 0\n" "info"
 	read -p '>> ' DISK_DEFAULT
 	if [[ $DISK_DEFAULT = "0" ]]; then cl && exit; fi
 
-	cl
+	clear
 	check_type_disk
 	pt "<< Проверьте данные >>\n"
 	
@@ -87,7 +86,7 @@ fast_install() {
 
 	case $check_install in
 		y|Y|д) fast_install2 ;;
-		n|N|н) cl && exit ;;
+		n|N|н) clear && exit ;;
 		*) fast_install2 ;;
 	esac
 
@@ -138,8 +137,8 @@ pt "Создаем post скрипт..\n" "yellow"
 cat > $SYS_DIR/root/post << ENDOFILE
 #!/usr/bin/env bash
 #### Форматирование текста
-bd=$(tput bold)
-cl=$(tput reset)
+bold=$(tput bold)
+
 pt() {
 case $2 in
 	info) COLOR="94m" ;;

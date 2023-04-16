@@ -64,6 +64,8 @@ create_dir() {
 if [[ ! -d "$SYS_DIR" ]]; then
 	mkdir -p $SYS_DIR
 	mkdir -p $EFI_DIR
+else
+	rm -rf $SYS_DIR/*
 fi
 }
 
@@ -72,7 +74,7 @@ unmount() {
 	umount -R $SYS_DIR >/dev/null 2>&1
 }
 
-mounts() {
+parted_mounts() {
 	mount -t auto /dev/${DEVICE}${PARTED_EFI} $EFI_DIR
 	mount -t auto /dev/${DEVICE}${PARTED_EFI} $EFI_DIR
 }
@@ -135,22 +137,23 @@ base_install() {
 
 base_install2() {
 	pt "Размечаем..\n" "yellow"
+	sgdisk -o /dev/$DEVICE
 # Автоматическая разметка
 	parted -s /dev/${DEVICE} mklabel gpt
 	parted -s /dev/${DEVICE} mkpart fat32 0% 1024M
 	parted -s /dev/${DEVICE} set 1 esp on  
 	parted -s /dev/${DEVICE} mkpart primary 1024M 90%
 # Форматирование разделов
-	wipefs -a -f /dev/$DEVICE
 	mkfs.fat -F32 /dev/${DEVICE}${PARTED_EFI}
 	check_progress
-	mke2fs -t ext4 -L System -q /dev/${DEVICE}${PARTED_SYS}
+	mkfs.ext4 /dev/${DEVICE}${PARTED_SYS}
 	check_progress
 	cfdisk /dev/${DEVICE}
 	check_disk
 	pt "Монтирование..\n" "yellow"
 # Монтирование разделов в папки
 	create_dir
+	parted_mounts
 	sed -i "/\[multilib\]/,/Include/"'s/^#//' /etc/pacman.conf
 	pacman -Sy
 	base_install3

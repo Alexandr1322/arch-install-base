@@ -6,9 +6,10 @@ DISK_DEFAULT=""
 # Разделы
 PARTED_EFI=""
 PARTED_SYS=""
+# Папки для монтирования
 EFI_DIR="/mnt/system/efi"
 SYS_DIR="/mnt/system"
-#Форматирование текста
+# Форматирование текста
 sp=$(sleep 0)
 RED="\e[31m"
 ORANGE="\e[33m"
@@ -37,8 +38,8 @@ fi
 }
 
 check_type_disk() {
-	if [[ $DISK_DEFAULT = "sd*" ]]; then PARTED_EFI="1" && PARTED_SYS="2"; fi
-	if [[ $DISK_DEFAULT = "nvme*" ]]; then PARTED_EFI="p1" && PARTED_SYS="p2"; fi
+	if [[ $DISK_DEFAULT ~= "sd*" ]]; then PARTED_EFI="1" && PARTED_SYS="2"; fi
+	if [[ $DISK_DEFAULT ~= "nvme*" ]]; then PARTED_EFI="p1" && PARTED_SYS="p2"; fi
 }
 
 fast_install() {

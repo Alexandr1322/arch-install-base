@@ -29,7 +29,7 @@ p_drv="r8168 nvidia nvidia-utils lib32-nvidia-utils"
 p_font="ttf-dejavu ttf-liberation ttf-font-awesome ttf-hack ttf-iosevka-nerd"
 
 create_dir() {
-if [[ ! -d "$SYS_DIR" || ! -d "$EFI_DIR" ]]; then
+if [[ ! -d "$SYS_DIR" ]]; then
 	mkdir -p $SYS_DIR
 	mkdir -p $EFI_DIR
 else
@@ -99,7 +99,7 @@ fast_install2() {
 	mount -t auto /dev/${DISK_DEFAULT}${PARTED_EFI} $EFI_DIR
 	mount -t auto /dev/${DISK_DEFAULT}${PARTED_SYS} $SYS_DIR
 	sleep 1
-	sed -i "/\[multilib\]/,/Include/"'s/^#//' ${SYS_DIR}/etc/pacman.conf
+	sed -i "/\[multilib\]/,/Include/"'s/^#//' /etc/pacman.conf
 	pacman -Sy
 	fast_install3
 }
@@ -128,6 +128,7 @@ echo "FONT=cyr-sun16" >> /etc/vconsole.conf
 locale-gen
 sed -i 's/# %wheel ALL=(ALL) ALL/%wheel ALL=(ALL) ALL/' /etc/sudoers
 ln -sf /usr/share/zoneinfo/Europe/Moscow /etc/localtime
+sed -i "/\[multilib\]/,/Include/"'s/^#//' ${SYS_DIR}/etc/pacman.conf
 hwclock --systohc --utc && date
 echo $hostname > /etc/hostname
 systemctl enable NetworkManager

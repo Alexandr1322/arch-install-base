@@ -108,7 +108,6 @@ fast_install3() {
 	pacman-key --init
 	pacstrap -K $SYS_DIR $p_base $p_drv $p_font || exit
 	genfstab -L $SYS_DIR >> $SYS_DIR/etc/fstab || exit
-	mkinitcpio -P || exit
 	system_settings
 }
 
@@ -119,19 +118,41 @@ add_user=""
 pass_root=""
 pass_user=""
 hostname="arch"
+sp=$(sleep 0)
+RED="\e[31m"
+ORANGE="\e[33m"
+BLUE="\e[94m"
+L_BLUE="\e[96m"
+YELLOW="\e[93m"
+GREEN="\e[92m"
+STOP="\e[0m"
+bold=$(tput bold)
+clear_l=$(tput ed)
 
-echo -e $GREEN"...Настройка сиситемы..."
+sleep 1
+
+echo -e $ORANGE"...Настройка сиситемы..."
+echo $hostname > /etc/hostname
+systemctl enable NetworkManager
+cp /usr/lib/systemd/system/getty@.service /etc/systemd/system/autologin@.service
+ln -s /etc/systemd/system/autologin@.service /etc/systemd/system/getty.target.wants/getty@tty1.service
+sed -i "/\[multilib\]/,/Include/"'s/^#//' /etc/pacman.conf
+hwclock --systohc --utc && date
+ln -sf /usr/share/zoneinfo/Europe/Moscow /etc/localtime
+pacman -Syu --noconfirm grub efibootmgr dosfstools os-prober
+grub-install --target=x86_64-efi --efi-directory=/efi --bootloader-id=Arch --force
+grub-mkconfig -o /boot/grub/grub.cfg || exit
+mkinitcpio -P || exit
+echo -e $GREEN"Настройка сиситемы завершена!"
+
+echo -e $GREEN"...Настройка локали..."
 echo "LANG=ru_RU.UTF-8" > /etc/locale.conf
 echo "LC_COLLATE=C" >> /etc/locale.conf
 echo "KEYMAP=us,ru" > /etc/vconsole.conf
 echo "FONT=cyr-sun16" >> /etc/vconsole.conf
 locale-gen
-sed -i 's/# %wheel ALL=(ALL) ALL/%wheel ALL=(ALL) ALL/' /etc/sudoers
-ln -sf /usr/share/zoneinfo/Europe/Moscow /etc/localtime
-sed -i "/\[multilib\]/,/Include/"'s/^#//' ${SYS_DIR}/etc/pacman.conf
-hwclock --systohc --utc && date
-echo $hostname > /etc/hostname
-systemctl enable NetworkManager
+echo -e $GREEN"Настройка локали завершена!"
+
 echo -e $ORANGE"...Настройка пользователя..."
 echo "Введите имя пользователя"
 read -p '>>' add_user
@@ -140,19 +161,17 @@ usermod -aG audio,video,input,disk,storage,optical,wheel,adm,ftp,log,sys,uucp $a
 echo -e "Введите пароль для root"
 read -p '>>' pass_root
 echo -e "$pass_root\n$pass_root" | passwd -q root
+sed -i 's/# %wheel ALL=(ALL) ALL/%wheel ALL=(ALL) ALL/' /etc/sudoers
 echo -e "Введите пароль для $user"
 read -p '>>' pass_user
 echo -e "$pass_user\n$pass_user" | passwd -q $add_user
-echo -e $GREEN"Настройка завершена!"
-sleep 1
-cp $SYS_DIR/usr/lib/systemd/system/getty@.service $SYS_DIR/etc/systemd/system/autologin@.service
-ln -s $SYS_DIR/etc/systemd/system/autologin@.service $SYS_DIR/etc/systemd/system/getty.target.wants/getty@tty1.service
-hwclock --systohc --utc && date
-ln -sf /usr/share/zoneinfo/Europe/Moscow /etc/localtime
-pacman -Syu --noconfirm grub efibootmgr dosfstools os-prober
-grub-install --target=x86_64-efi --efi-directory=/efi --bootloader-id=Arch --force
-grub-mkconfig -o /boot/grub/grub.cfg
-mkinitcpio -P
+echo -e "\n==================================="
+echo -e "Ваш пароль для root: "$pass_root
+echo -e "Ваш пароль для $user: "$pass_user
+echo -e "==================================="
+echo -e $GREEN"Нажмите Enter, чтобы продолжить"
+read
+echo -e $GREEN"Настройка пользователя завершена!"
 ENDOFILE
 chmod +x $SYS_DIR/root/post
 }

@@ -61,7 +61,7 @@ fast_install() {
 	echo -e "<< Проверьте данные >>\n"
 	
 	echo -e $RED"Будьте внимательны, диск будет отформатирован и размечен в GPT\n"
-	echo -e $GREEN" Диск: <${DISK_DEFAULT}> $(lsblk /dev/${DISK_DEFAULT} -o "MODEL,SIZE" -n)"
+	echo -e $GREEN" Диск: <${DISK_DEFAULT}> $(lsblk -o "MODEL,SIZE" /dev/${DISK_DEFAULT} -d -n)"
 	echo -e $GREEN" EFI раздел: <${PARTED_EFI}>"
 	echo -e $GREEN" SYS раздел: <${PARTED_SYS}>"
 	echo -e $ORANGE

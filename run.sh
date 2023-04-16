@@ -68,7 +68,7 @@ fi
 }
 
 check_mount() {
-	if findmnt ${EFI_DIR,$SYS_DIR}) >/dev/null 2>&1 ; then
+	if findmnt ${EFI_DIR} || findmnt ${SYS_DIR}) >/dev/null 2>&1 ; then
 		umount -R $EFI_DIR
 		umount -R $SYS_DIR
 	else

@@ -85,7 +85,7 @@ fast_install2() {
 	echo -e $YELLOW"Размечаем.."
 # Автоматическая разметка
 	parted -s /dev/${DISK_DEFAULT} mklabel gpt
-	parted -s /dev/${DISK_DEFAULT} mkpart fat32 0% 1024M
+	parted -s /dev/${DISK_DEFAULT} mkpart "EFI system partition" fat32 0% 1024M
 	parted -s /dev/${DISK_DEFAULT} set 1 esp on  
 	parted -s /dev/${DISK_DEFAULT} mkpart primary 1024M 90%
 	sleep 1
@@ -131,20 +131,6 @@ clear_l=$(tput ed)
 
 sleep 1
 
-echo -e $ORANGE"...Настройка сиситемы..."
-echo $hostname > /etc/hostname
-systemctl enable NetworkManager
-cp /usr/lib/systemd/system/getty@.service /etc/systemd/system/autologin@.service
-ln -s /etc/systemd/system/autologin@.service /etc/systemd/system/getty.target.wants/getty@tty1.service
-sed -i "/\[multilib\]/,/Include/"'s/^#//' /etc/pacman.conf
-hwclock --systohc --utc && date
-ln -sf /usr/share/zoneinfo/Europe/Moscow /etc/localtime
-mkinitcpio -P || exit
-pacman -Syu --noconfirm grub efibootmgr dosfstools os-prober
-grub-install --target=x86_64-efi --efi-directory=$EFI_DIR --bootloader-id=Arch --force
-grub-mkconfig -o /boot/grub/grub.cfg || exit
-echo -e $GREEN"Настройка сиситемы завершена!"
-
 echo -e $GREEN"...Настройка локали..."
 echo "LANG=ru_RU.UTF-8" > /etc/locale.conf
 echo "LC_COLLATE=C" >> /etc/locale.conf
@@ -171,6 +157,21 @@ echo -e "Ваш пароль для $user: "$pass_user
 echo -e "==================================="
 echo -e $GREEN"Нажмите Enter, чтобы продолжить"
 read
+
+echo -e $ORANGE"...Настройка системы..."
+echo $hostname > /etc/hostname
+systemctl enable NetworkManager
+cp /usr/lib/systemd/system/getty@.service /etc/systemd/system/autologin@.service
+ln -s /etc/systemd/system/autologin@.service /etc/systemd/system/getty.target.wants/getty@tty1.service
+sed -i "/\[multilib\]/,/Include/"'s/^#//' /etc/pacman.conf
+hwclock --systohc --utc && date
+ln -sf /usr/share/zoneinfo/Europe/Moscow /etc/localtime
+pacman -Syu --noconfirm grub efibootmgr dosfstools os-prober
+grub-install --target=x86_64-efi --efi-directory=/boot/efi --bootloader-id=Arch --force
+grub-mkconfig -o /boot/grub/grub.cfg || exit
+mkinitcpio -P || exit
+echo -e $GREEN"Настройка системы завершена!"
+
 echo -e $GREEN"Настройка пользователя завершена!"
 ENDOFILE
 chmod +x $SYS_DIR/root/post

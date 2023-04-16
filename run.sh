@@ -43,7 +43,8 @@ fi
 }
 ####
 
-function main_start() {
+main_start() {
+	clear
 	pt "Выберите режим работы:\n" "warning"
 	pt "1) Chroot в существующую систему\n" "info"
 	pt "2) Исправление проблем (если FAIL)\n" "info"
@@ -58,7 +59,7 @@ function main_start() {
 	esac
 }
 
-function create_dir() {
+create_dir() {
 if [[ ! -d "$SYS_DIR" ]]; then
 	mkdir -p $SYS_DIR
 	mkdir -p $EFI_DIR
@@ -67,14 +68,14 @@ else
 fi
 }
 
-function script_fix() {
+script_fix() {
 	check_mount
 	pt "Очищаем папку SYS от остатков..\n" "yellow"
 	rm -rf $SYS_DIR/*
 	check_progress
 }
 
-function check_disk() {
+check_disk() {
 	if [[ $DISK_DEFAULT == sd* ]]; then
 		PARTED_EFI="1" && PARTED_SYS="2"
 	fi
@@ -89,14 +90,14 @@ function check_disk() {
 	check_progress
 }
 
-function chroot_system() {
+chroot_system() {
 	clear
 	check_disk
 	arch-chroot $SYS_DIR /bin/bash
 	clear
 }
 
-function base_install() {
+base_install() {
 	clear
 	pt "<< ВНИМАНИЕ! >>\n" "error"
 	pt "Система будет установлена с настройками из готовой конфигурации:\n" "warning"
@@ -129,7 +130,7 @@ function base_install() {
 
 }
 
-function base_install2() {
+base_install2() {
 	pt "Размечаем..\n" "yellow"
 # Автоматическая разметка
 	parted -s /dev/${DISK_DEFAULT} mklabel gpt
@@ -151,7 +152,7 @@ function base_install2() {
 	base_install3
 }
 
-function base_install3() {
+base_install3() {
 	pt "Проверяем ключи..\n" "yellow"
 	pacman-key --init || exit
 	check_progress
@@ -164,7 +165,7 @@ function base_install3() {
 	system_settings
 }
 
-function pre_reboot() {
+pre_reboot() {
 pt "Создаем post скрипт..\n" "yellow"
 echo > $SYS_DIR/root/post << ENDOFILE
 #!/usr/bin/env bash
@@ -248,7 +249,7 @@ check_progress
 chmod +x $SYS_DIR/root/post
 }
 
-function system_settings() {
+system_settings() {
 	pre_reboot
 	pt "Базовая система установленна!\n" "success"
 	pt "Дальнейшая настройка будет производится в chroot\n" "warning"

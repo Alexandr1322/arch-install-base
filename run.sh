@@ -2,10 +2,10 @@
 
 setfont cyr-sun16
 # Ваш диск по умолчанию, на который будем ставить
-DISK_DEFAULT="nvme0n1"
-# Имена раделов
-PARTED_EFI="p1"
-PARTED_SYS="p2"
+DISK_DEFAULT=""
+# Разделы
+PARTED_EFI=""
+PARTED_SYS=""
 EFI_DIR="/mnt/system/efi"
 SYS_DIR="/mnt/system"
 #Форматирование текста
@@ -28,12 +28,17 @@ p_drv="r8168 nvidia nvidia-utils lib32-nvidia-utils"
 p_font="ttf-dejavu ttf-liberation ttf-font-awesome ttf-hack ttf-iosevka-nerd"
 
 create_dir() {
-	if [[ ! -d "$SYS_DIR" ]]; then
-		mkdir -p $SYS_DIR
-		mkdir -p $EFI_DIR
-	else
-		echo -e "$ORANGE Рабочая директория уже существует!"
-	fi
+if [[ ! -d "$SYS_DIR" || ! -d "$EFI_DIR" ]]; then
+	mkdir -p $SYS_DIR
+	mkdir -p $EFI_DIR
+else
+	echo -e "$ORANGE Рабочая директория уже существует!"
+fi
+}
+
+check_type_disk() {
+	if [[ $DISK_DEFAULT = "sd*" ]]; then PARTED_EFI="1" && PARTED_SYS="2"; fi
+	if [[ $DISK_DEFAULT = "nvme*" ]]; then PARTED_EFI="p1" && PARTED_SYS="p2"; fi
 }
 
 fast_install() {
@@ -41,7 +46,7 @@ fast_install() {
 	echo -e $RED"<< ВНИМАНИЕ! >>"
 	echo -e $ORANGE"Система будет установлена с настройками из готовой конфигурации:"
 	echo -e $ORANGE" - Диск будет размечен автоматически\n"
-	echo -e $ORANGE"Диск <DISK_DEFAULT> определяется по NAME <sda,sdb и.т.д>"
+	echo -e $ORANGE"Диск <disk> определяется по NAME <sda,sdb и.т.д>"
 	echo -e $ORANGE"========================================"
 	lsblk -o "NAME,MODEL,SIZE"
 	echo -e $ORANGE"========================================"
@@ -49,15 +54,16 @@ fast_install() {
 	echo "Напишите имя диска из списка, на который будет установлена система"
 	echo -e "Выйти в главное меню - 0"
 	read -p '>> ' DISK_DEFAULT
-
 	if [[ $DISK_DEFAULT = "0" ]]; then fast_install; fi
 
 	clear;
-	
+	check_type_disk
 	echo -e "<< Проверьте данные >>\n"
 	
 	echo -e $RED"Будьте внимательны, диск будет отформатирован и размечен в GPT\n"
 	echo -e $GREEN" Диск: <${DISK_DEFAULT}> $(lsblk /dev/${DISK_DEFAULT} -o "MODEL,SIZE" -n)"
+	echo -e $GREEN" EFI раздел: <${PARTED_EFI}>"
+	echo -e $GREEN" SYS раздел: <${PARTED_SYS}>"
 	echo -e $ORANGE
 	echo "Все верно? [Y/n]"
 	read -p '>> ' check_finstall

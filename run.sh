@@ -135,13 +135,13 @@ base_install() {
 
 base_install2() {
 	pt "Размечаем..\n" "yellow"
-	wipefs -a -f $DEVICE
 # Автоматическая разметка
 	parted -s /dev/${DEVICE} mklabel gpt
 	parted -s /dev/${DEVICE} mkpart fat32 0% 1024M
 	parted -s /dev/${DEVICE} set 1 esp on  
 	parted -s /dev/${DEVICE} mkpart primary 1024M 90%
 # Форматирование разделов
+	wipefs -a -f /dev/$DEVICE
 	mkfs.fat -F32 /dev/${DEVICE}${PARTED_EFI}
 	check_progress
 	mke2fs -t ext4 -L System -q /dev/${DEVICE}${PARTED_SYS}

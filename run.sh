@@ -35,7 +35,8 @@ repair_commands() {
 	case $ERROR in
 		01)
 			pt "Пытаемся исправить.." "warning"
-			umount -R {$EFI_DIR,$SYS_DIR}
+			umount -R $EFI_DIR
+			umount -R $SYS_DIR
 			fast_install2
 		;;
 	esac

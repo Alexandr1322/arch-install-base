@@ -49,12 +49,12 @@ function main_start() {
 	pt "2) Исправление проблем (если FAIL)\n" "info"
 	pt "3) Установка базовой системы\n" "info"
 	pt "0) Выйти из скрипта" "info"
-	
+	read -p ">> " mode
 	case $mode in 
 		1) chroot_system ;;
 		2) script_fix ;;
 		3) base_install ;;
-		
+		*|0) exit ;;
 	esac
 }
 

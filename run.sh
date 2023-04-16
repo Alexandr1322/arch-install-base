@@ -10,6 +10,7 @@ PARTED_EFI=""
 PARTED_SYS=""
 EFI_DIR="/mnt/system/boot/efi"
 SYS_DIR="/mnt/system"
+ERROR=""
 #### Базовые пакеты
 p_base="base base-devel linux-lts linux-firmware amd-ucode intel-ucode xorg networkmanager"
 #### Драйвера
@@ -30,16 +31,6 @@ esac
 STARTCOLOR="\e[$COLOR";
 ENDCOLOR="\e[0m";
     printf "$STARTCOLOR%b$ENDCOLOR" "$1";
-
-repair_commands() {
-	case $ERROR in
-		01)
-			pt "Пытаемся исправить.." "warning"
-			umount -R $EFI_DIR
-			umount -R $SYS_DIR
-			fast_install2
-		;;
-	esac
 }
 
 check_progress() {
@@ -47,30 +38,65 @@ if [ $? -eq 0 ]; then
     pt "Статус: OK\n" "success"
 else
     pt "Статус: FAIL\n" "error"
-    repair_commands
+    exit
 fi
 }
 ####
 
-create_dir() {
+function main_start() {
+	pt "Выберите режим работы:\n" "warning"
+	pt "1) Chroot в существующую систему\n" "info"
+	pt "2) Исправление проблем (если FAIL)\n" "info"
+	pt "3) Установка базовой системы\n" "info"
+	pt "0) Выйти из скрипта" "info"
+	
+	case $mode in 
+		1) chroot_system ;;
+		2) script_fix ;;
+		3) base_install ;;
+		
+	esac
+}
+
+function create_dir() {
 if [[ ! -d "$SYS_DIR" ]]; then
 	mkdir -p $SYS_DIR
 	mkdir -p $EFI_DIR
 else
-	echo -e "$ORANGE Рабочая директория уже существует!"
+	pt "Рабочая директория уже существует!" "warning"
 fi
 }
 
-check_type_disk() {
+function script_fix() {
+	check_mount
+	pt "Очищаем папку SYS от остатков..\n" "yellow"
+	rm -rf $SYS_DIR/*
+	check_progress
+}
+
+function check_disk() {
 	if [[ $DISK_DEFAULT == sd* ]]; then
 		PARTED_EFI="1" && PARTED_SYS="2"
 	fi
 	if [[ $DISK_DEFAULT == nvme* ]]; then
 		PARTED_EFI="p1" && PARTED_SYS="p2"
 	fi
+	pt "Монтирование EFI\n" "info"
+	mount -t auto /dev/${DISK_DEFAULT}${PARTED_EFI} $EFI_DIR
+	check_progress
+	pt "Монтирование SYSTEM\n" "info"
+	mount -t auto /dev/${DISK_DEFAULT}${PARTED_SYS} $SYS_DIR
+	check_progress
 }
 
-fast_install() {
+function chroot_system() {
+	clear
+	check_disk
+	arch-chroot $SYS_DIR /bin/bash
+	clear
+}
+
+function base_install() {
 	clear
 	pt "<< ВНИМАНИЕ! >>\n" "error"
 	pt "Система будет установлена с настройками из готовой конфигурации:\n" "warning"
@@ -85,7 +111,7 @@ fast_install() {
 	if [[ $DISK_DEFAULT = "0" ]]; then cl && exit; fi
 
 	clear
-	check_type_disk
+	check_disk
 	pt "<< Проверьте данные >>\n"
 	
 	pt "Будьте внимательны, диск будет отформатирован и размечен в GPT\n" "error"
@@ -96,14 +122,14 @@ fast_install() {
 	read -p '>> ' check_finstall
 
 	case $check_install in
-		y|Y|д) fast_install2 ;;
+		y|Y|д) base_install2 ;;
 		n|N|н) clear && exit ;;
-		*) fast_install2 ;;
+		*) base_install2 ;;
 	esac
 
 }
 
-fast_install2() {
+function base_install2() {
 	pt "Размечаем..\n" "yellow"
 # Автоматическая разметка
 	parted -s /dev/${DISK_DEFAULT} mklabel gpt
@@ -112,25 +138,20 @@ fast_install2() {
 	parted -s /dev/${DISK_DEFAULT} mkpart primary 1024M 90%
 # Форматирование разделов
 	mkfs.fat -F32 -q /dev/${DISK_DEFAULT}${PARTED_EFI}
-	check_progress && ERROR="01"
+	check_progress
 	mke2fs -t ext4 -L System -q /dev/${DISK_DEFAULT}${PARTED_SYS}
 	check_progress
 	cfdisk /dev/${DISK_DEFAULT}
+	check_disk
 	pt "Монтирование..\n" "yellow"
 # Монтирование разделов в папки
 	create_dir
-	pt "Монтирование EFI\n" "info"
-	mount -t auto /dev/${DISK_DEFAULT}${PARTED_EFI} $EFI_DIR
-	check_progress
-	pt "Монтирование SYSTEM\n" "info"
-	mount -t auto /dev/${DISK_DEFAULT}${PARTED_SYS} $SYS_DIR
-	check_progress
 	sed -i "/\[multilib\]/,/Include/"'s/^#//' /etc/pacman.conf
 	pacman -Sy
-	fast_install3
+	base_install3
 }
 
-fast_install3() {
+function base_install3() {
 	pt "Проверяем ключи..\n" "yellow"
 	pacman-key --init || exit
 	check_progress
@@ -143,9 +164,9 @@ fast_install3() {
 	system_settings
 }
 
-pre_reboot() {
+function pre_reboot() {
 pt "Создаем post скрипт..\n" "yellow"
-cat > $SYS_DIR/root/post << ENDOFILE
+echo > $SYS_DIR/root/post << ENDOFILE
 #!/usr/bin/env bash
 #### Форматирование текста
 bold=$(tput bold)
@@ -227,7 +248,7 @@ check_progress
 chmod +x $SYS_DIR/root/post
 }
 
-system_settings() {
+function system_settings() {
 	pre_reboot
 	pt "Базовая система установленна!\n" "success"
 	pt "Дальнейшая настройка будет производится в chroot\n" "warning"
@@ -238,4 +259,5 @@ system_settings() {
 	arch-chroot $SYS_DIR /bin/bash -c "/root/post"
 	acrh-chroot $SYS_DIR /bin/bash
 }
-fast_install
+
+main_start

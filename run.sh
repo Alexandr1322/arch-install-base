@@ -1,9 +1,6 @@
 #!/usr/bin/env bash
 
-setfont ter-u18b
-localectl set-locale LANG=ru_RU.UTF-8;
-unset LANG;
-source /etc/profile.d/locale.sh
+setfont setfont cyr-sun16
 #### Переменные
 DEVICE=""
 PARTED_EFI=""

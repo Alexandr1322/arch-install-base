@@ -94,7 +94,7 @@ check_disk() {
 chroot_system() {
 	clear
 	check_disk
-	umount_all
+	unmount
 	parted_mounts
 	arch-chroot $SYS_DIR /bin/bash
 }

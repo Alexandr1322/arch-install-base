@@ -67,14 +67,14 @@ if [[ ! -d "$SYS_DIR" ]]; then
 fi
 }
 
-check_mount() {
-	if [[ findmnt ${EFI_DIR} ]] || [[ findmnt ${SYS_DIR} ]] >/dev/null 2>&1 ; then
-		umount -R $EFI_DIR
-		umount -R $SYS_DIR
-	else
-		mount -t auto /dev/${DISK_DEFAULT}${PARTED_EFI} $EFI_DIR
-		mount -t auto /dev/${DISK_DEFAULT}${PARTED_EFI} $EFI_DIR
-	fi
+unmount() {
+	umount -R $EFI_DIR >/dev/null 2>&1
+	umount -R $SYS_DIR >/dev/null 2>&1
+}
+
+mounts() {
+	mount -t auto /dev/${DISK_DEFAULT}${PARTED_EFI} $EFI_DIR
+	mount -t auto /dev/${DISK_DEFAULT}${PARTED_EFI} $EFI_DIR
 }
 
 script_fix() {
@@ -100,7 +100,7 @@ chroot_system() {
 }
 
 base_install() {
-	check_mount
+	unmount
 	clear
 	pt "<< ВНИМАНИЕ! >>\n" "error"
 	pt "Система будет установлена с настройками из готовой конфигурации:\n" "warning"

@@ -10,7 +10,7 @@ PARTED_EFI=""
 PARTED_SYS=""
 EFI_DIR="/mnt/system/boot/efi"
 SYS_DIR="/mnt/system"
-ERROR=""
+MODE=""
 #### Базовые пакеты
 p_base="base base-devel linux-lts linux-firmware amd-ucode intel-ucode xorg networkmanager"
 #### Драйвера
@@ -50,8 +50,8 @@ main_start() {
 	pt "2) Исправление проблем (если FAIL)\n" "info"
 	pt "3) Установка базовой системы\n" "info"
 	pt "0) Выйти из скрипта" "info"
-	read -p ">> " mode
-	case $mode in 
+	read -p ">> " MODE
+	case $MODE in 
 		1) chroot_system ;;
 		2) script_fix ;;
 		3) base_install ;;

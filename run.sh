@@ -44,12 +44,13 @@ fi
 ####
 
 main_start() {
+	create_dir
 	clear
 	pt "Выберите режим работы:\n" "warning"
 	pt "1) Chroot в существующую систему\n" "info"
 	pt "2) Исправление проблем (если FAIL)\n" "info"
 	pt "3) Установка базовой системы\n" "info"
-	pt "0) Выйти из скрипта" "info"
+	pt "0) Выйти из скрипта\n" "info"
 	read -p ">> " MODE
 	case $MODE in 
 		1) chroot_system ;;
@@ -63,8 +64,6 @@ create_dir() {
 if [[ ! -d "$SYS_DIR" ]]; then
 	mkdir -p $SYS_DIR
 	mkdir -p $EFI_DIR
-else
-	pt "Рабочая директория уже существует!" "warning"
 fi
 }
 

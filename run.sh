@@ -30,6 +30,15 @@ esac
 STARTCOLOR="\e[$COLOR";
 ENDCOLOR="\e[0m";
     printf "$STARTCOLOR%b$ENDCOLOR" "$1";
+
+repair_commands() {
+	case $ERROR in
+		01)
+			pt "Пытаемся исправить.." "warning"
+			umount -R $EFI_DIR,$SYS_DIR
+			fast_install2
+		;;
+	esac
 }
 
 check_progress() {
@@ -37,7 +46,7 @@ if [ $? -eq 0 ]; then
     pt "Статус: OK\n" "success"
 else
     pt "Статус: FAIL\n" "error"
-    exit
+    repair_commands
 fi
 }
 ####
@@ -101,8 +110,8 @@ fast_install2() {
 	parted -s /dev/${DISK_DEFAULT} set 1 esp on  
 	parted -s /dev/${DISK_DEFAULT} mkpart primary 1024M 90%
 # Форматирование разделов
-	mkfs.fat -F32 /dev/${DISK_DEFAULT}${PARTED_EFI}
-	check_progress
+	mkfs.fat -F32 -q /dev/${DISK_DEFAULT}${PARTED_EFI}
+	check_progress && ERROR="01"
 	mke2fs -t ext4 -L System -q /dev/${DISK_DEFAULT}${PARTED_SYS}
 	check_progress
 	cfdisk /dev/${DISK_DEFAULT}

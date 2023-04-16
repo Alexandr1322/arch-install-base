@@ -108,7 +108,7 @@ fast_install3() {
 	pacman-key --init
 	pacstrap -K $SYS_DIR $p_base $p_drv $p_font || exit
 	genfstab -L $SYS_DIR >> $SYS_DIR/etc/fstab || exit
-	mkinitcpio -p linux || exit
+	mkinitcpio -P || exit
 	system_settings
 }
 

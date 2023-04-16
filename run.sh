@@ -5,7 +5,7 @@ localectl set-locale LANG=ru_RU.UTF-8;
 unset LANG;
 source /etc/profile.d/locale.sh
 #### Переменные
-DISK_DEFAULT=""
+DEVICE=""
 PARTED_EFI=""
 PARTED_SYS=""
 EFI_DIR="/mnt/system/boot/efi"
@@ -73,8 +73,8 @@ unmount() {
 }
 
 mounts() {
-	mount -t auto /dev/${DISK_DEFAULT}${PARTED_EFI} $EFI_DIR
-	mount -t auto /dev/${DISK_DEFAULT}${PARTED_EFI} $EFI_DIR
+	mount -t auto /dev/${DEVICE}${PARTED_EFI} $EFI_DIR
+	mount -t auto /dev/${DEVICE}${PARTED_EFI} $EFI_DIR
 }
 
 script_fix() {
@@ -84,10 +84,10 @@ script_fix() {
 }
 
 check_disk() {
-	if [[ $DISK_DEFAULT == sd* ]]; then
+	if [[ $DEVICE == sd* ]]; then
 		PARTED_EFI="1" && PARTED_SYS="2"
 	fi
-	if [[ $DISK_DEFAULT == nvme* ]]; then
+	if [[ $DEVICE == nvme* ]]; then
 		PARTED_EFI="p1" && PARTED_SYS="p2"
 	fi
 }
@@ -111,15 +111,15 @@ base_install() {
 	pt "========================================\n" "warning"
 	pt "Напишите имя диска из списка, на который будет установлена система\n" "info"
 	pt "Выйти - 0\n" "info"
-	read -p '>> ' DISK_DEFAULT
-	if [[ $DISK_DEFAULT = "0" ]]; then cl && exit; fi
+	read -p '>> ' DEVICE
+	if [[ $DEVICE = "0" ]]; then cl && exit; fi
 
 	clear
 	check_disk
 	pt "<< Проверьте данные >>\n"
 	
 	pt "Будьте внимательны, диск будет отформатирован и размечен в GPT\n" "error"
-	pt " Диск: <${DISK_DEFAULT}> $(lsblk -o "MODEL,SIZE" /dev/${DISK_DEFAULT} -d -n)\n" "success"
+	pt " Диск: <${DEVICE}> $(lsblk -o "MODEL,SIZE" /dev/${DEVICE} -d -n)\n" "success"
 	pt " EFI раздел: <${PARTED_EFI}>\n" "success"
 	pt " SYS раздел: <${PARTED_SYS}>\n" "success"
 	pt "Все верно? [Y/n]\n" "yellow"
@@ -135,17 +135,18 @@ base_install() {
 
 base_install2() {
 	pt "Размечаем..\n" "yellow"
+	wipefs -a -f $DEVICE
 # Автоматическая разметка
-	parted -s /dev/${DISK_DEFAULT} mklabel gpt
-	parted -s /dev/${DISK_DEFAULT} mkpart fat32 0% 1024M
-	parted -s /dev/${DISK_DEFAULT} set 1 esp on  
-	parted -s /dev/${DISK_DEFAULT} mkpart primary 1024M 90%
+	parted -s /dev/${DEVICE} mklabel gpt
+	parted -s /dev/${DEVICE} mkpart fat32 0% 1024M
+	parted -s /dev/${DEVICE} set 1 esp on  
+	parted -s /dev/${DEVICE} mkpart primary 1024M 90%
 # Форматирование разделов
-	mkfs.fat -F32 -q /dev/${DISK_DEFAULT}${PARTED_EFI}
+	mkfs.fat -F32 /dev/${DEVICE}${PARTED_EFI}
 	check_progress
-	mke2fs -t ext4 -L System -q /dev/${DISK_DEFAULT}${PARTED_SYS}
+	mke2fs -t ext4 -L System -q /dev/${DEVICE}${PARTED_SYS}
 	check_progress
-	cfdisk /dev/${DISK_DEFAULT}
+	cfdisk /dev/${DEVICE}
 	check_disk
 	pt "Монтирование..\n" "yellow"
 # Монтирование разделов в папки

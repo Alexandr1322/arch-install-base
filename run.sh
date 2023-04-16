@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 
-setfont cyr-sun16
+setfont ter-u18b
+localectl set-locale LANG=ru_RU.UTF-8;
+unset LANG;
+source /etc/profile.d/locale.sh
 # Ваш диск по умолчанию, на который будем ставить
 DISK_DEFAULT=""
 # Разделы
@@ -85,9 +88,9 @@ fast_install2() {
 	echo -e $YELLOW"Размечаем.."
 # Автоматическая разметка
 	parted -s /dev/${DISK_DEFAULT} mklabel gpt
-	parted -s /dev/${DISK_DEFAULT} mkpart "EFI system partition" fat32 0% 1024M
+	parted -s /dev/${DISK_DEFAULT} mkpart fat32 0% 1024M
 	parted -s /dev/${DISK_DEFAULT} set 1 esp on  
-	parted -s /dev/${DISK_DEFAULT} mkpart primary 1024M 90%
+	parted -s /dev/${DISK_DEFAULT} mkpart primary ext4 1024M 90%
 	sleep 1
 # Форматирование разделов
 	mkfs.fat -F32 /dev/${DISK_DEFAULT}${PARTED_EFI}
@@ -114,9 +117,9 @@ fast_install3() {
 pre_reboot() {
 cat > $SYS_DIR/root/post << ENDOFILE
 #!/usr/bin/env bash
-add_user=""
-pass_root=""
-pass_user=""
+add_user="alex"
+pass_root="123"
+pass_user="123"
 hostname="arch"
 sp=$(sleep 0)
 RED="\e[31m"
@@ -141,15 +144,15 @@ echo -e $GREEN"Настройка локали завершена!"
 
 echo -e $ORANGE"...Настройка пользователя..."
 echo "Введите имя пользователя"
-read -p '>>' add_user
+read -p '>> ' add_user
 useradd -m -s /bin/bash $add_user
 usermod -aG audio,video,input,disk,storage,optical,wheel,adm,ftp,log,sys,uucp $add_user
 echo -e "Введите пароль для root"
-read -p '>>' pass_root
-echo -e "$pass_root\n$pass_root" | passwd -q root
+read -p '>> ' pass_root
+echo -e "$pass_root\n$pass_root" | passwd -q $root
 sed -i 's/# %wheel ALL=(ALL) ALL/%wheel ALL=(ALL) ALL/' /etc/sudoers
 echo -e "Введите пароль для $user"
-read -p '>>' pass_user
+read -p '>> ' pass_user
 echo -e "$pass_user\n$pass_user" | passwd -q $add_user
 echo -e "\n==================================="
 echo -e "Ваш пароль для root: "$pass_root

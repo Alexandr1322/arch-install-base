@@ -37,6 +37,7 @@ if [ $? -eq 0 ]; then
     pt "Статус: OK\n" "success"
 else
     pt "Статус: FAIL\n" "error"
+    exit
 fi
 }
 ####
@@ -81,7 +82,7 @@ fast_install() {
 	pt " Диск: <${DISK_DEFAULT}> $(lsblk -o "MODEL,SIZE" /dev/${DISK_DEFAULT} -d -n)\n" "success"
 	pt " EFI раздел: <${PARTED_EFI}>\n" "success"
 	pt " SYS раздел: <${PARTED_SYS}>\n" "success"
-	pt "Все верно? [Y/n]\n" "warning"
+	pt "Все верно? [Y/n]\n" "yellow"
 	read -p '>> ' check_finstall
 
 	case $check_install in
@@ -158,6 +159,7 @@ if [ $? -eq 0 ]; then
     pt "Статус: OK\n" "success"
 else
     pt "Статус: FAIL\n" "error"
+    exit
 fi
 }
 ####

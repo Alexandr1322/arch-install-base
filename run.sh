@@ -67,8 +67,17 @@ if [[ ! -d "$SYS_DIR" ]]; then
 fi
 }
 
+check_mount() {
+	if findmnt ${EFI_DIR,$SYS_DIR}) >/dev/null 2>&1 ; then
+		umount -R $EFI_DIR
+		umount -R $SYS_DIR
+	else
+		mount -t auto /dev/${DISK_DEFAULT}${PARTED_EFI} $EFI_DIR
+		mount -t auto /dev/${DISK_DEFAULT}${PARTED_EFI} $EFI_DIR
+	fi
+}
+
 script_fix() {
-	check_mount
 	pt "Очищаем папку SYS от остатков..\n" "yellow"
 	rm -rf $SYS_DIR/*
 	check_progress
@@ -81,12 +90,6 @@ check_disk() {
 	if [[ $DISK_DEFAULT == nvme* ]]; then
 		PARTED_EFI="p1" && PARTED_SYS="p2"
 	fi
-	pt "Монтирование EFI\n" "info"
-	mount -t auto /dev/${DISK_DEFAULT}${PARTED_EFI} $EFI_DIR
-	check_progress
-	pt "Монтирование SYSTEM\n" "info"
-	mount -t auto /dev/${DISK_DEFAULT}${PARTED_SYS} $SYS_DIR
-	check_progress
 }
 
 chroot_system() {
@@ -97,6 +100,7 @@ chroot_system() {
 }
 
 base_install() {
+	check_mount
 	clear
 	pt "<< ВНИМАНИЕ! >>\n" "error"
 	pt "Система будет установлена с настройками из готовой конфигурации:\n" "warning"

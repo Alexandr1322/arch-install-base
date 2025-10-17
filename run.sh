@@ -8,8 +8,8 @@ export LC_ALL=ru_RU.KOI8-R
 DEVICE=""
 PARTED_EFI=""
 PARTED_SYS=""
-EFI_DIR="/mnt/system/boot/efi"
-SYS_DIR="/mnt/system"
+EFI_DIR="/mnt/sys/boot/efi"
+SYS_DIR="/mnt/sys"
 MODE=""
 #### Базовые пакеты
 p_base="base base-devel linux-lts linux-firmware amd-ucode intel-ucode xorg networkmanager"

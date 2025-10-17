@@ -11,7 +11,7 @@ MODE=""
 #### Базовые пакеты
 p_base="base base-devel linux-lts linux-firmware amd-ucode intel-ucode xorg networkmanager"
 #### Драйвера
-p_drv="r8168 nvidia nvidia-utils lib32-nvidia-utils"
+p_drv="r8168-lts nvidia nvidia-utils lib32-nvidia-utils"
 #### Шрифты
 p_font="ttf-dejavu ttf-liberation ttf-font-awesome ttf-hack ttf-iosevka-nerd"
 #### Форматирование текста

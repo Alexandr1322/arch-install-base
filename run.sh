@@ -82,6 +82,7 @@ parted_mounts() {
 script_fix() {
 	pt "Очищаем папку SYS от остатков..\n" "yellow"
 	rm -rf $SYS_DIR/*
+	umount
 	check_progress
 }
 
@@ -106,7 +107,6 @@ chroot_system() {
 }
 
 base_install() {
-	unmount
 	clear
 	pt "<< ВНИМАНИЕ! >>\n" "error"
 	pt "Система будет установлена с настройками из готовой конфигурации:\n" "warning"

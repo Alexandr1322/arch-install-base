@@ -86,6 +86,9 @@ check_disk() {
 	if [[ $DEVICE == sd* ]]; then
 		PARTED_EFI="1" && PARTED_SYS="2"
 	fi
+	if [[ $DEVICE == vd* ]]; then
+		PARTED_EFI="1" && PARTED_SYS="2"
+	fi
 	if [[ $DEVICE == nvme* ]]; then
 		PARTED_EFI="p1" && PARTED_SYS="p2"
 	fi

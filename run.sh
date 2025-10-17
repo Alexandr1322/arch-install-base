@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 
-setfont setfont cyr-sun16
+setfont cyr-sun16
+export LANGUAGE=ru_RU
+export LANG=ru_RU.KOI8-R
+export LC_ALL=ru_RU.KOI8-R
 #### Переменные
 DEVICE=""
 PARTED_EFI=""
